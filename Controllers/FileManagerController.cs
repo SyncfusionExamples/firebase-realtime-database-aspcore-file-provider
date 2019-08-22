@@ -1,4 +1,4 @@
-﻿using Syncfusion.EJ2.FileManager.FirebaseRealTimeDBFileProvider;
+﻿using Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -15,11 +15,11 @@ namespace EJ2FireBaseFileProvider.Controllers
     [EnableCors("AllowAllOrigins")]
     public class FileManagerController : Controller
     {
-        public FirebaseRealTimeDBFileProvider operation;
+        public FirebaseRealtimeFileProvider operation;
         public FileManagerController(IHostingEnvironment hostingEnvironment)
         {
-            this.operation = new FirebaseRealTimeDBFileProvider();
-            this.operation.SetRESTAPIURL("https://filemanager-7d98e.firebaseio.com/", "Files");
+            this.operation = new FirebaseRealtimeFileProvider();
+            this.operation.SetRESTAPIURL("https://filemanager-c0f6d.firebaseio.com/", "Files");
         }
         [Route("FileOperations")]
         public object FileOperations([FromBody] FileManagerDirectoryContent args)

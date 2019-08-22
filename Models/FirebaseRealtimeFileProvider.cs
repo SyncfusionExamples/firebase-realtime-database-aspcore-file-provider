@@ -10,13 +10,13 @@ using Newtonsoft.Json.Serialization;
 using Syncfusion.EJ2.FileManager.Base;
 using FirebaseHelper;
 
-namespace Syncfusion.EJ2.FileManager.FirebaseRealTimeDBFileProvider
+namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
 {
-    public class FirebaseRealTimeDBFileProvider : FirebaseRealTimeDBFileProviderBase
+    public class FirebaseRealtimeFileProvider : FirebaseRealtimeFileProviderBase
     {
         protected string filterPath = null;
         protected string filterId = null;
-        protected long fileData;
+        protected long fileSize;
         FirebaseOperations firebaseAPI;
         FirebaseOperations getFirebaseRootNode;
         FirebaseResponse getResponse;
@@ -34,7 +34,7 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealTimeDBFileProvider
             this.UpdateFirebaseJSONData();
         }
 
-        public FirebaseRealTimeDBFileProvider()
+        public FirebaseRealtimeFileProvider()
         {
         }
         //updates the firebase realtime database json
@@ -242,7 +242,7 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealTimeDBFileProvider
                     detailFiles = fileDetails;
                 }
                 getDetailResponse.Details = detailFiles;
-                this.fileData = 0;
+                this.fileSize = 0;
                 return getDetailResponse;
             }
             catch (Exception e)
@@ -319,16 +319,16 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealTimeDBFileProvider
         {
             foreach (FileManagerDirectoryContent item in data)
             {
-                this.fileData = this.fileData + item.Size;
-                long[] fileData = this.firebaseGetData.Where(x => x.ParentId == item.Id).Select(x => x.Size).ToArray();
-                this.fileData = this.fileData + fileData.Sum();
+                this.fileSize = this.fileSize + item.Size;
+                long[] fileSize = this.firebaseGetData.Where(x => x.ParentId == item.Id).Select(x => x.Size).ToArray();
+                this.fileSize = this.fileSize + fileSize.Sum();
                 FileManagerDirectoryContent[] dataFile = this.firebaseGetData.Where(x => x.ParentId == item.Id && x.IsFile == false).Select(x => x).ToArray();
                 if (dataFile.Length > 0)
                 {
                     this.GetItemSize(dataFile);
                 }
             }
-            return this.fileData;
+            return this.fileSize;
         }
         //Deletes the child nodes from a folder
         public void DeleteItems(string item)
@@ -368,8 +368,8 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealTimeDBFileProvider
             try
             {
                 this.UpdateFirebaseJSONData();
-                FileManagerDirectoryContent[] emptyFolder = this.firebaseGetData.Where(x => x.ParentId == data[0].ParentId).Select(x => x).ToArray();
-                if (emptyFolder.Length == 0)
+                FileManagerDirectoryContent[] deleteResponse = this.firebaseGetData.Where(x => x.ParentId == data[0].ParentId).Select(x => x).ToArray();
+                if (deleteResponse.Length == 0)
                 {
                     this.getFirebaseRootNode.Patch(this.APIURL + "/" + this.rootNode + "/" + data[0].ParentId, JsonConvert.SerializeObject(new UpdateChild() { hasChild = false, dateModified = DateTime.Now.ToString() }));
                 }
@@ -844,8 +844,8 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealTimeDBFileProvider
             {
                 if (child.IsFile)
                 {
-                    byte[][] fileData = this.firebaseGetData.Where(x => x.ParentId == Id && x.IsFile == true).Select(x => x.Content).ToArray();
-                    byte[] fileContent = fileData.SelectMany(i => i).ToArray();
+                    byte[][] fileSize = this.firebaseGetData.Where(x => x.ParentId == Id && x.IsFile == true).Select(x => x.Content).ToArray();
+                    byte[] fileContent = fileSize.SelectMany(i => i).ToArray();
                     Stream file;
                     using (file = System.IO.File.OpenWrite(Path.Combine(Path.GetTempPath() + Name, child.Name)))
                     {
