@@ -1,7 +1,6 @@
 ﻿
 namespace FirebaseHelper
 {
-    using Google.Apis.Auth.OAuth2;
     using System;
     using System.IO;
     using System.Text;
@@ -38,18 +37,10 @@ namespace FirebaseHelper
         {
             this.Method = method;
             this.JSON = jsonString;
-            if (uri.Replace("/", string.Empty).EndsWith("firebaseio.com"))
-            {
-                this.Uri = uri + '/' + ".json";
-            }
-            else
-            {
-                this.Uri = uri + ".json";
-            }
+            this.Uri = (uri.Replace("/", string.Empty).EndsWith("firebaseio.com")) ? uri + '/' + ".json" : uri + ".json";
         }
 
         private HttpMethod Method { get; set; }
-
 
         private string JSON { get; set; }
 
@@ -76,9 +67,9 @@ namespace FirebaseHelper
                 }
             }
 
-            var response = FirebaseOperations.RequestHelper(this.Method, requestURI, json);
+            Task<HttpResponseMessage> response = FirebaseOperations.RequestHelper(this.Method, requestURI, json);
             response.Wait();
-            var result = response.Result;
+            HttpResponseMessage result = response.Result;
             var firebaseResponse = new FirebaseResponse()
             {
                 HttpResponse = result,
@@ -87,7 +78,7 @@ namespace FirebaseHelper
             };
             if (this.Method.Equals(HttpMethod.Get))
             {
-                var content = result.Content.ReadAsStringAsync();
+                Task<string> content = result.Content.ReadAsStringAsync();
                 content.Wait();
                 firebaseResponse.JSONContent = content.Result;
             }
@@ -96,12 +87,6 @@ namespace FirebaseHelper
     }
     public class FirebaseOperations
     {
-        public FirebaseOperations()
-        {
-
-        }
-        private const string USER_AGENT = "firebase-net/0.2";
-
         public static bool ValidateURI(string url)
         {
             Uri locurl;
@@ -119,7 +104,6 @@ namespace FirebaseHelper
             {
                 return false;
             }
-
             return true;
         }
 
@@ -142,15 +126,11 @@ namespace FirebaseHelper
         {
             var client = new HttpClient();
             var msg = new HttpRequestMessage(method, uri);
-            msg.Headers.Add("user-agent", USER_AGENT);
+            msg.Headers.Add("user-agent", "firebase-net/0.2");
             if (json != null)
             {
-                msg.Content = new StringContent(
-                    json,
-                    UnicodeEncoding.UTF8,
-                    "application/json");
+                msg.Content = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
             }
-
             return client.SendAsync(msg);
         }
 
@@ -179,22 +159,10 @@ namespace FirebaseHelper
             return new FirebaseRequest(HttpMethod.Get, rootNode).Execute();
         }
         //Updates a node from the firebase database
-
-        public FirebaseResponse Put(string rootNode, string jsonData)
-        {
-            return new FirebaseRequest(HttpMethod.Put, rootNode, jsonData).Execute();
-        }
-
-        public FirebaseResponse Post(string jsonData)
-        {
-            return new FirebaseRequest(HttpMethod.Post, this.RootNode, jsonData).Execute();
-        }
-
         public FirebaseResponse Patch(string rootNode, string jsonData)
         {
             return new FirebaseRequest(new HttpMethod("PATCH"), rootNode, jsonData).Execute();
         }
-
         //Deleted a node from the firebase database
         public FirebaseResponse Delete(string rootnode)
         {
