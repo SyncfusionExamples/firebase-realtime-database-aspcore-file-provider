@@ -16,8 +16,6 @@ namespace Syncfusion.EJ2.FileManager.FirebaseFileProvider
     {
         protected string filterPath = null;
         protected string filterId = null;
-        protected string filterId = null;
-        protected string filterId = null;
         protected long fileData;
         FirebaseOperations firebaseAPI;
         FirebaseOperations getFirebaseRootNode;
