@@ -10,7 +10,7 @@ using Newtonsoft.Json.Serialization;
 using Syncfusion.EJ2.FileManager.Base;
 using FirebaseHelper;
 
-namespace Syncfusion.EJ2.FileManager.FirebaseFileProvider
+namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
 {
     public class FirebaseRealtimeDBFileProvider : FirebaseRealtimeDBFileProviderBase
     {
