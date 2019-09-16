@@ -1,12 +1,13 @@
+//check this link for generating google access token in JSON form: https://developers.google.com/identity/protocols/OAuth2
 {
   "type": "service_account",
-  "project_id": "filemanager-7d98e",
-  "private_key_id": "b3bf77f6f400dd8e6fc31475d9a303e953112289",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDPQpR0o9CXCtSZ\n4VZl/lrCh6gFNP56PazrhT26nCtXnImn8FBYbCr5yEiqo7Ggy7sL2CjEfcYXfzon\nq/TzTRGMKQvxfbpSn2CkXmxSz89FspnoKj5UJrwQYqIBRJW7KRT9t/KhSbVF4yRy\n72wPUMzD0M+K1nARYNRVNnooUnLLY2Hobq8Txs37uMctwB0whuUdwKhBUSJyySqc\nvuzYdO2sC6Fq5INC1WqZ83Rmar7uv8Q7LkJNhHe3GKr1fpBZkkTKBvDpIdIm1Inh\nleMQON8g7h7CqTwI0jVr13rh7zKXofxIALiu/TGBHY94VQBftcWmmFy/fTg+31tn\nHt90CYDpAgMBAAECggEADCaS+b4XVt2Mjntsk2TsqPonPmvnjd7TBgk9D9VDQLsF\ngnYXHcH0qIlmgjN/0MWU4QpChJd7jynXLNd60C8428LVx4n3jAu6MJS1DMtQU12X\nwonEdu5A6QSBSyn8TblIOOIpfC1sLk1VWBQjfYffA01Y94KgFhK7TAYaNgY0YupE\n3XNDhpltbDPSiLzQyBlInzoqhp+SdJ3b9gUvhtof/DLu/6f5KNlA41XCAvV9v7Zg\nfLAW9okJUUYmq9Q/kUt9r0lBGIRzD9eNPQIIFYsOBsUGRt8GhDZxs72weUBkHlqc\nCZEZfNd7/35fRoaMM50/6K49sxhS6QehWcScOjF78QKBgQD/xLo+76UizwOJw35c\n4fmhKpG83Bo5dgWkrdewGTT3Wuxx00Pz2mZsDR7fPyM/Vo5h703O3SOVy/Wq92ty\n6EdHefipDWQujcpS9qWQMlz1+YVSrVDPT7nrtXQO0vOIcimK+QITyOhEF+0+OQRS\nZH8W/uYy0ixhBQ6NvrsrXAyCUQKBgQDPcpxlBejhxwXc47U+jRAYUKVLo7TrH6Pg\njsnRLdhfPLrtn3D/sOY2a/BaPP35qdMjtcV4890y0dgvytd62sn6mqTBWzm9ds0g\nVadELZjo7JJlZawnC7OoWyeIWMjZ9j+BoSPeshiAtLKAnHvVDqXT2PNLRx9zdz7g\nGrZO3wOXGQKBgGgEfO4tjg5K/JhhbhmeOWSHKIATT4MA8aiYnrhaeAUE8FYWYnNg\n5fiZmW2XguE2dW904EL6AofgTAf82bEAsERsYWl3LcAVICx/bLPpF49drBAEtnGp\nbeZjhFCnEC30p9qCDIs5UOSoim6cx5oujtUuUzZl7XCDmvigkgQ/SkMRAoGBAMW6\nFjtsMJbS3lG2cNCYH9ktNQAtn4nkdIzbTJ2mtu+/sORA7rGn6SXCKCu6qtFG/0qw\nPPKWbiW8QfT7v/sHgzDsKVFrJFPkYowJWA7x7ydEJh2jlTz6OFml2L5q8bZeshVa\nhBgFZLl4ghN4E8f12DVeOjdsKRwjcrikfVQb2Q4xAoGBAIA2IWD2l+u5srYmeOmh\n+/BX5i353xleZkUQX3bl8SCkJFCm2ab8PW2XFkA37GRB8HF37cX0/hahVlqX82uf\n1WgYKrTmStJxDZiDzaurgCtcX6g+yLpjxWp7gMkKOnbvdDpLS1nB41b7uRi0xlky\n5smVl9h+j6ca9p8pWW8lB4rx\n-----END PRIVATE KEY-----\n",
-  "client_email": "filemanager-7d98e@appspot.gserviceaccount.com",
-  "client_id": "104166645483247370722",
+  "project_id": "filemanager",
+  "private_key_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "private_key": "-----BEGIN PRIVATE KEY-----\xxxxxxxxxxxxxxxxxxxxx\n-----END PRIVATE KEY-----\n",
+  "client_email": "filemanager@appspot.gserviceaccount.com",
+  "client_id": "xxxxxx",
   "auth_uri": "https://accounts.google.com/o/oauth2/auth",
   "token_uri": "https://oauth2.googleapis.com/token",
   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/filemanager-7d98e%40appspot.gserviceaccount.com"
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/filemanager%40appspot.gserviceaccount.com"
 }
