@@ -1,10 +1,8 @@
-﻿
-
-namespace Syncfusion.EJ2.FileManager.Base
+﻿namespace Syncfusion.EJ2.FileManager.Base
 {
     public interface FirebaseRealTimeDBFileProviderBase : FileProviderBase
     {
-        void SetRESTAPIURL(string APIURL, string rootNode);
+        void SetRESTAPIURL(string apiURL, string rootNode, string basePath);
     }
 
 }
