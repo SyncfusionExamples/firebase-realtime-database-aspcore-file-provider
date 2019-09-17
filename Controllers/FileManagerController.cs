@@ -13,15 +13,15 @@ namespace EJ2APIServices.Controllers
 {
     [Route("api/[controller]")]
     [EnableCors("AllowAllOrigins")]
-    public class FileManagerController : Controller
+    public class FirebaseProviderController : Controller
     {
         public FirebaseRealtimeDBFileProvider operation;
-        public FileManagerController(IHostingEnvironment hostingEnvironment)
+        public FirebaseProviderController(IHostingEnvironment hostingEnvironment)
         {
             this.operation = new FirebaseRealtimeDBFileProvider();
-            this.operation.RegisterFirebaseRealtimeDB("https://filemanager-c0f6d.firebaseio.com/", "Files", hostingEnvironment.ContentRootPath);
+            this.operation.RegisterFirebaseRealtimeDB("https://filemanager-c0f6d.firebaseio.com/", "Files", hostingEnvironment.ContentRootPath + "\\FirebaseRealtimeDBHelper\\access_key.json");
         }
-        [Route("FileOperations")]
+        [Route("FirebaseRealtimeFileOperations")]
         public object FileOperations([FromBody] FileManagerDirectoryContent args)
         {
             if (args.Action == "delete" || args.Action == "rename")
@@ -60,7 +60,7 @@ namespace EJ2APIServices.Controllers
             return null;
         }
 
-        [Route("Upload")]
+        [Route("FirebaseRealtimeUpload")]
         public IActionResult Upload(string path, IList<IFormFile> uploadFiles, string action, string data)
         {
             FileManagerResponse uploadResponse;
@@ -77,14 +77,14 @@ namespace EJ2APIServices.Controllers
             return Content("");
         }
 
-        [Route("Download")]
+        [Route("FirebaseRealtimeDownload")]
         public IActionResult Download(string downloadInput)
         {
             FileManagerDirectoryContent args = JsonConvert.DeserializeObject<FileManagerDirectoryContent>(downloadInput);
             return operation.Download(args.Path, args.Names, args.Data);
         }
 
-        [Route("GetImage")]
+        [Route("FirebaseRealtimeGetImage")]
         public IActionResult GetImage(FileManagerDirectoryContent args)
         {
             return this.operation.GetImage(args.Path, args.Id, true, null, args.Data);

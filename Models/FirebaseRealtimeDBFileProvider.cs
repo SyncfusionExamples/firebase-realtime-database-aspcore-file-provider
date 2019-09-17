@@ -25,24 +25,24 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
         List<FileManagerDirectoryContent> copyFiles = new List<FileManagerDirectoryContent>();
         protected string apiUrl;
         protected string rootNode;
-        protected string basePath;
+        protected string accessTokenPath;
 
         // Registering the firebase realtime database storage 
-        public void RegisterFirebaseRealtimeDB(string apiUrl, string rootNode, string basePath)
+        public void RegisterFirebaseRealtimeDB(string apiUrl, string rootNode, string accessTokenPath)
         {
             this.apiUrl = apiUrl;
             this.rootNode = rootNode;
-            this.basePath = basePath;
-            this.UpdateFirebaseJSONData(basePath);
+            this.accessTokenPath = accessTokenPath;
+            this.UpdateFirebaseJSONData();
         }
 
         public FirebaseRealtimeDBFileProvider()
         {
         }
         //updates the firebase realtime database json
-        private void UpdateFirebaseJSONData(string basePath)
+        private void UpdateFirebaseJSONData()
         {
-            this.firebaseAPI = new FirebaseOperations(this.apiUrl, this.basePath + "\\FirebaseRealtimeDBHelper\\access_key.json");
+            this.firebaseAPI = new FirebaseOperations(this.apiUrl,this.accessTokenPath);
             this.getFirebaseRootNode = firebaseAPI.Node(this.rootNode);
             this.getResponse = getFirebaseRootNode.Get(this.apiUrl + "/" + this.rootNode + "/");
             dynamic obj = Newtonsoft.Json.JsonConvert.DeserializeObject(getResponse.JSONContent);
@@ -370,7 +370,7 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
             FileManagerResponse DeleteResponse = new FileManagerResponse();
             try
             {
-                this.UpdateFirebaseJSONData(this.basePath);
+                this.UpdateFirebaseJSONData();
                 FileManagerDirectoryContent[] emptyFolder = this.firebaseGetData.Where(x => x.ParentId == data[0].ParentId).Select(x => x).ToArray();
                 if (emptyFolder.Length == 0)
                 {
@@ -392,7 +392,7 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
         // Returns the last node id from the firebase database
         public int updatedNodeId()
         {
-            this.UpdateFirebaseJSONData(this.basePath);
+            this.UpdateFirebaseJSONData();
             return this.firebaseGetData.Select(x => x.Id).ToArray().Select(int.Parse).ToArray().Max();
         }
 
@@ -403,7 +403,7 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
             try
             {
                 this.getFirebaseRootNode.Patch(this.apiUrl + "/" + this.rootNode + "/" + data[0].Id, JsonConvert.SerializeObject(new RenameNode() { name = "" + newName, type = System.IO.Path.GetExtension(newName) }));
-                this.UpdateFirebaseJSONData(this.basePath);
+                this.UpdateFirebaseJSONData();
                 FileManagerDirectoryContent[] renamedData = firebaseGetData.Where(x => x.Id == data[0].Id).Select(x => new FileManagerDirectoryContent()
                 {
                     Id = x.Id,
@@ -613,7 +613,7 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                     this.GetRelativeId(targetData.Id);
                     this.GetRelativePath(targetData.Id, "/");
                     this.getFirebaseRootNode.Patch(this.apiUrl + "/" + this.rootNode + "/" + item.Id, JsonConvert.SerializeObject(new UpdateParentId() { parentId = targetData.Id, isRoot = String.IsNullOrEmpty(targetData.ParentId) ? true : false, filterId = this.filterId + "/", filterPath = this.filterPath.Substring(this.rootNode.Length) + "/" }));
-                    this.UpdateFirebaseJSONData(this.basePath);
+                    this.UpdateFirebaseJSONData();
                     this.updateChildPath(item, false);
                     FileManagerDirectoryContent[] targetItem = this.firebaseGetData.Where(x => x.Id == targetData.Id).Select(x => x).ToArray();
                     if (targetItem[0].HasChild == false)
