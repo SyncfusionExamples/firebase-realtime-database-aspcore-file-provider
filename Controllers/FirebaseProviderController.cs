@@ -61,7 +61,7 @@ namespace EJ2APIServices.Controllers
         }
 
         [Route("FirebaseRealtimeUpload")]
-        public IActionResult Upload(string path, IList<IFormFile> uploadFiles, string action, string data)
+        public IActionResult FirebaseRealtimeUpload(string path, IList<IFormFile> uploadFiles, string action, string data)
         {
             FileManagerResponse uploadResponse;
             FileManagerDirectoryContent[] dataObject = new FileManagerDirectoryContent[1];
@@ -78,14 +78,14 @@ namespace EJ2APIServices.Controllers
         }
 
         [Route("FirebaseRealtimeDownload")]
-        public IActionResult Download(string downloadInput)
+        public IActionResult FirebaseRealtimeDownload(string downloadInput)
         {
             FileManagerDirectoryContent args = JsonConvert.DeserializeObject<FileManagerDirectoryContent>(downloadInput);
             return operation.Download(args.Path, args.Names, args.Data);
         }
 
         [Route("FirebaseRealtimeGetImage")]
-        public IActionResult GetImage(FileManagerDirectoryContent args)
+        public IActionResult FirebaseRealtimeGetImage(FileManagerDirectoryContent args)
         {
             return this.operation.GetImage(args.Path, args.Id, true, null, args.Data);
         }
