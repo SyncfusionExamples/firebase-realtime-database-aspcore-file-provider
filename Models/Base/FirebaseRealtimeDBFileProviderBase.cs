@@ -2,7 +2,7 @@
 {
     public interface FirebaseRealtimeDBFileProviderBase : FileProviderBase
     {
-        void SetRESTAPIURL(string apiURL, string rootNode, string basePath);
+        void RegisterFirebaseRealtimeDB(string apiUrl, string rootNode, string basePath);
     }
 
 }

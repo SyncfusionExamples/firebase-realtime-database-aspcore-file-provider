@@ -20,11 +20,11 @@ The following actions can be performed with firebase realtime database based fil
 
 ## Prerequisites
 
-To run the service, we need to create a [Firebase project](https://console.firebase.google.com/) to access firebase realtime database. Register the realtime database details like REST API link and the root node in the SetRESTAPIURL method of FilebaseRealtimeFileProvider in the controller part of the ASP.NET Core application.
+To run the service, we need to create a [Firebase project](https://console.firebase.google.com/) to access firebase realtime database. Register the realtime database details like REST API link and the root node in the RegisterFirebaseRealtimeDB method of FilebaseRealtimeFileProvider in the controller part of the ASP.NET Core application.
 
 ```
 
-  SetRESTAPIURL(string APIURL, string rootNode)
+  RegisterFirebaseRealtimeDB(string apiUrl, string rootNode)
 
 ```
 

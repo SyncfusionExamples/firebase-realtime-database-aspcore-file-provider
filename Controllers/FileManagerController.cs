@@ -19,7 +19,7 @@ namespace EJ2APIServices.Controllers
         public FileManagerController(IHostingEnvironment hostingEnvironment)
         {
             this.operation = new FirebaseRealtimeDBFileProvider();
-            this.operation.SetRESTAPIURL("https://filemanager-c0f6d.firebaseio.com/", "Files", hostingEnvironment.ContentRootPath);
+            this.operation.RegisterFirebaseRealtimeDB("https://filemanager-c0f6d.firebaseio.com/", "Files", hostingEnvironment.ContentRootPath);
         }
         [Route("FileOperations")]
         public object FileOperations([FromBody] FileManagerDirectoryContent args)
