@@ -22,7 +22,7 @@ namespace EJ2APIServices.Controllers
             this.operation.RegisterFirebaseRealtimeDB("https://filemanager-c0f6d.firebaseio.com/", "Files", hostingEnvironment.ContentRootPath + "\\FirebaseRealtimeDBHelper\\access_key.json");
         }
         [Route("FirebaseRealtimeFileOperations")]
-        public object FileOperations([FromBody] FileManagerDirectoryContent args)
+        public object FirebaseRealtimeFileOperations([FromBody] FileManagerDirectoryContent args)
         {
             if (args.Action == "delete" || args.Action == "rename")
             {
