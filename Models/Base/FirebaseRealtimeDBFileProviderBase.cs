@@ -2,7 +2,7 @@
 {
     public interface FirebaseRealtimeDBFileProviderBase : FileProviderBase
     {
-        void RegisterFirebaseRealtimeDB(string apiUrl, string rootNode, string accessTokenPath);
+        void RegisterFirebaseRealtimeDB(string apiUrl, string rootNode, string serviceAccountKeyPath);
     }
 
 }
