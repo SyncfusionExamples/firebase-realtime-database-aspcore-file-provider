@@ -1,9 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## 17.3.0.14 (2019-10-04)
 
-### Firebase realtime database File System Provider
+### Firebase realtime database file system provider
 
 #### New Features
 
-- Added firebase realtime database filesystem provider support for ASP.NET Core.
+- Added Firebase realtime cloud storage database filesystem provider support for ASP.NET Core.

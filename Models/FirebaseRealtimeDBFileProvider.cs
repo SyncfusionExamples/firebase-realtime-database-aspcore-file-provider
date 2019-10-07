@@ -12,7 +12,7 @@ using FirebaseHelper;
 
 namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
 {
-    public class FirebaseRealtimeDBFileProvider : FirebaseRealtimeDBFileProviderBase
+    public class FirebaseRealtimeDBFileProvider : FirebaseRealtimeFileProviderBase
     {
         protected string filterPath = null;
         protected string filterId = null;
@@ -25,14 +25,14 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
         List<FileManagerDirectoryContent> copyFiles = new List<FileManagerDirectoryContent>();
         protected string apiUrl;
         protected string rootNode;
-        protected string accessTokenPath;
+        protected string serviceAccountKeyPath;
 
         // Registering the firebase realtime database storage 
-        public void RegisterFirebaseRealtimeDB(string apiUrl, string rootNode, string accessTokenPath)
+        public void RegisterFirebaseRealtimeDB(string apiUrl, string rootNode, string serviceAccountKeyPath)
         {
             this.apiUrl = apiUrl;
             this.rootNode = rootNode;
-            this.accessTokenPath = accessTokenPath;
+            this.serviceAccountKeyPath = serviceAccountKeyPath;
             this.UpdateFirebaseJSONData();
         }
 
@@ -42,7 +42,7 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
         //updates the firebase realtime database json
         private void UpdateFirebaseJSONData()
         {
-            this.firebaseAPI = new FirebaseOperations(this.apiUrl,this.accessTokenPath);
+            this.firebaseAPI = new FirebaseOperations(this.apiUrl, this.serviceAccountKeyPath);
             this.getFirebaseRootNode = firebaseAPI.Node(this.rootNode);
             this.getResponse = getFirebaseRootNode.Get(this.apiUrl + "/" + this.rootNode + "/");
             dynamic obj = Newtonsoft.Json.JsonConvert.DeserializeObject(getResponse.JSONContent);
@@ -223,6 +223,12 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                 else
                 {
                     List<string> NamesList = new List<string>();
+                    bool sameFolder = true;
+                    foreach (var location in data) {
+                        if (data[0].FilterPath != location.FilterPath) {
+                            sameFolder = false;
+                        }
+                    }
                     for (int i = 0; i < names.Length; i++)
                     {
                         FileManagerDirectoryContent[] cwd = firebaseGetData.Where(x => x.Id == data[i].Id).Select(x => new FileManagerDirectoryContent()
@@ -241,7 +247,7 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                         NamesList.Add(cwd[0].Name);
                     }
                     fileDetails.Name = string.Join(", ", NamesList.ToArray());
-                    fileDetails.Location = "Various folders";
+                    fileDetails.Location = sameFolder ? rootNode + data[0].FilterPath.TrimEnd('/') : "Various folders";
                     fileDetails.Size = byteConversion(long.Parse("" + this.GetItemSize(data))).ToString();
                     fileDetails.MultipleFiles = true;
                     detailFiles = fileDetails;
