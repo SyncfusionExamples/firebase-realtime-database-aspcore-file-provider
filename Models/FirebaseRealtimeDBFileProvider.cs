@@ -12,7 +12,7 @@ using FirebaseHelper;
 
 namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
 {
-    public class FirebaseRealtimeDBFileProvider : FirebaseRealtimeFileProviderBase
+    public class FirebaseRealtimeDBFileProvider : FirebaseRealtimeDBFileProviderBase
     {
         protected string filterPath = null;
         protected string filterId = null;
