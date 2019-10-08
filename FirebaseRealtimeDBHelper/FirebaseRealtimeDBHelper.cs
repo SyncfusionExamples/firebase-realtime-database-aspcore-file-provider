@@ -133,8 +133,8 @@
 
         public static Task<HttpResponseMessage> RequestHelper(HttpMethod method, Uri uri, string json = null)
         {
-            if (!string.IsNullOrEmpty(AccessAuthentication.JWTToken))
-                uri = new Uri($"{uri}?access_token={AccessAuthentication.JWTToken}");
+            if (!string.IsNullOrEmpty(AccessAuthentication.jwtToken))
+                uri = new Uri($"{uri}?access_token={AccessAuthentication.jwtToken}");
             HttpClient client = new HttpClient();
             HttpRequestMessage message = new HttpRequestMessage(method, uri);
             message.Headers.Add("user-agent", "firebase-net/0.2");
@@ -182,7 +182,7 @@
 
     class AccessAuthentication
     {
-        public static string JWTToken { get; set; }
+        public static string jwtToken { get; set; }
 
         private static string accessKeyFilePath;
 
@@ -203,7 +203,7 @@
             {
                 AccessAuthentication.accessKeyFilePath = accessKeyFilePath;
                 AccessAuthentication.scopes = (scopes.Length == 0) ? new string[] { "https://www.googleapis.com/auth/firebase", "https://www.googleapis.com/auth/userinfo.email" } : scopes;
-                JWTToken = GetAccessTokenFromJSONKeyAsync(accessKeyFilePath, AccessAuthentication.scopes).Result;
+                jwtToken = GetAccessTokenFromJSONKeyAsync(accessKeyFilePath, AccessAuthentication.scopes).Result;
             }
             catch (Exception)
             {
@@ -213,8 +213,8 @@
 
         public static void RefreshToken()
         {
-            if (!string.IsNullOrEmpty(JWTToken))
-                JWTToken = GetAccessTokenFromJSONKeyAsync(accessKeyFilePath, scopes).Result;
+            if (!string.IsNullOrEmpty(jwtToken))
+                jwtToken = GetAccessTokenFromJSONKeyAsync(accessKeyFilePath, scopes).Result;
             else
                 throw new InvalidOperationException("Unauthorised Access! Given JWT token is invalid.");
         }
