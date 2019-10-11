@@ -12,37 +12,39 @@ using FirebaseHelper;
 
 namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
 {
-    public class FirebaseRealtimeFileProvider : FirebaseRealtimeFileProviderBase
+    public class FirebaseRealtimeDBFileProvider : FirebaseRealtimeDBFileProviderBase
     {
         protected string filterPath = null;
         protected string filterId = null;
-        protected long fileSize;
+        protected long fileData;
         FirebaseOperations firebaseAPI;
         FirebaseOperations getFirebaseRootNode;
         FirebaseResponse getResponse;
         FileManagerDirectoryContent[] firebaseGetData;
         private FileStreamResult fileStreamResult;
         List<FileManagerDirectoryContent> copyFiles = new List<FileManagerDirectoryContent>();
-        protected string APIURL;
+        protected string apiUrl;
         protected string rootNode;
+        protected string serviceAccountKeyPath;
 
         // Registering the firebase realtime database storage 
-        public void SetRESTAPIURL(string APIURL, string rootNode)
+        public void RegisterFirebaseRealtimeDB(string apiUrl, string rootNode, string serviceAccountKeyPath)
         {
-            this.APIURL = APIURL;
+            this.apiUrl = apiUrl;
             this.rootNode = rootNode;
+            this.serviceAccountKeyPath = serviceAccountKeyPath;
             this.UpdateFirebaseJSONData();
         }
 
-        public FirebaseRealtimeFileProvider()
+        public FirebaseRealtimeDBFileProvider()
         {
         }
         //updates the firebase realtime database json
         private void UpdateFirebaseJSONData()
         {
-            this.firebaseAPI = new FirebaseOperations(this.APIURL);
+            this.firebaseAPI = new FirebaseOperations(this.apiUrl, this.serviceAccountKeyPath);
             this.getFirebaseRootNode = firebaseAPI.Node(this.rootNode);
-            this.getResponse = getFirebaseRootNode.Get(this.APIURL + "/" + this.rootNode + "/");
+            this.getResponse = getFirebaseRootNode.Get(this.apiUrl + "/" + this.rootNode + "/");
             dynamic obj = Newtonsoft.Json.JsonConvert.DeserializeObject(getResponse.JSONContent);
             this.firebaseGetData = JsonConvert.DeserializeObject<FileManagerDirectoryContent[]>(getResponse.JSONContent);
             this.firebaseGetData = this.firebaseGetData.Where(c => c != null).ToArray();
@@ -150,7 +152,9 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
             try
             {
                 int idValue = this.firebaseGetData.Select(x => x.Id).ToArray().Select(int.Parse).ToArray().Max();
-                this.getFirebaseRootNode.Patch(this.APIURL + "/" + this.rootNode + "/" + data[0].Id, JsonConvert.SerializeObject(new UpdateChild() { hasChild = true, dateModified = DateTime.Now.ToString() }));
+                this.getFirebaseRootNode.Patch(this.apiUrl + "/" + this.rootNode + "/" + data[0].Id, JsonConvert.SerializeObject(new UpdateChild() { hasChild = true, dateModified = DateTime.Now.ToString() }));
+                this.GetRelativePath(data[0].Id, "/");
+                this.GetRelativeId(data[0].Id);
                 FileManagerDirectoryContent CreateData = new FileManagerDirectoryContent()
                 {
                     Id = (idValue + 1).ToString(),
@@ -163,8 +167,8 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                     ParentId = data[0].Id,
                     IsFile = false,
                     isRoot = (Int32.Parse(data[0].Id) == 0) ? true : false,
-                    FilterPath = this.GetRelativePath(data[0].Id, "/").Substring(this.rootNode.Length) + "/",
-                    FilterId = this.GetRelativeId(data[0].Id) + "/"
+                    FilterPath = this.filterPath.Substring(this.rootNode.Length) + "/",
+                    FilterId = this.filterId + "/"
                 };
                 this.updateDBNode(CreateData, idValue);
                 createResponse.Files = new FileManagerDirectoryContent[] { CreateData };
@@ -213,11 +217,18 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                         Modified = cwd[0].DateModified
                     };
                     detailFiles.Size = byteConversion(long.Parse("" + this.GetItemSize(data))).ToString();
-                    detailFiles.Location = this.GetRelativePath(cwd[0].Id, "\\");
+                    this.GetRelativePath(cwd[0].Id, "\\");
+                    detailFiles.Location = this.filterPath;
                 }
                 else
                 {
                     List<string> NamesList = new List<string>();
+                    bool sameFolder = true;
+                    foreach (var location in data) {
+                        if (data[0].FilterPath != location.FilterPath) {
+                            sameFolder = false;
+                        }
+                    }
                     for (int i = 0; i < names.Length; i++)
                     {
                         FileManagerDirectoryContent[] cwd = firebaseGetData.Where(x => x.Id == data[i].Id).Select(x => new FileManagerDirectoryContent()
@@ -236,13 +247,13 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                         NamesList.Add(cwd[0].Name);
                     }
                     fileDetails.Name = string.Join(", ", NamesList.ToArray());
-                    fileDetails.Location = "Various folders";
+                    fileDetails.Location = sameFolder ? rootNode + data[0].FilterPath.TrimEnd('/') : "Various folders";
                     fileDetails.Size = byteConversion(long.Parse("" + this.GetItemSize(data))).ToString();
                     fileDetails.MultipleFiles = true;
                     detailFiles = fileDetails;
                 }
                 getDetailResponse.Details = detailFiles;
-                this.fileSize = 0;
+                this.fileData = 0;
                 return getDetailResponse;
             }
             catch (Exception e)
@@ -256,7 +267,7 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
         }
 
         // Gets relative path of file or folder
-        public string GetRelativePath(string y, string pathSymbol)
+        public void GetRelativePath(string y, string pathSymbol)
         {
             FileManagerDirectoryContent[] file = firebaseGetData.Where(x => x.Id == y).Select(x => x).ToArray();
 
@@ -281,11 +292,10 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                     this.filterPath = path[0].Name + pathSymbol + filterPath;
                 }
             }
-            return this.filterPath;
         }
 
         // Gets relative Id of file or folder
-        public string GetRelativeId(string y)
+        public void GetRelativeId(string y)
         {
             FileManagerDirectoryContent[] file = firebaseGetData.Where(x => x.Id == y).Select(x => x).ToArray();
 
@@ -311,7 +321,6 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                     this.filterId = path[0].Id + "/" + filterId;
                 }
             }
-            return this.filterId;
         }
 
         // Returns the size of the selected file or folder
@@ -319,22 +328,22 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
         {
             foreach (FileManagerDirectoryContent item in data)
             {
-                this.fileSize = this.fileSize + item.Size;
-                long[] fileSize = this.firebaseGetData.Where(x => x.ParentId == item.Id).Select(x => x.Size).ToArray();
-                this.fileSize = this.fileSize + fileSize.Sum();
+                this.fileData = this.fileData + item.Size;
+                long[] fileData = this.firebaseGetData.Where(x => x.ParentId == item.Id).Select(x => x.Size).ToArray();
+                this.fileData = this.fileData + fileData.Sum();
                 FileManagerDirectoryContent[] dataFile = this.firebaseGetData.Where(x => x.ParentId == item.Id && x.IsFile == false).Select(x => x).ToArray();
                 if (dataFile.Length > 0)
                 {
                     this.GetItemSize(dataFile);
                 }
             }
-            return this.fileSize;
+            return this.fileData;
         }
         //Deletes the child nodes from a folder
         public void DeleteItems(string item)
         {
             FileManagerDirectoryContent[] childs = this.firebaseGetData.Where(x => x.ParentId == item).Select(x => x).ToArray();
-            this.getFirebaseRootNode.Delete(this.APIURL + "/" + this.rootNode + "/" + item);
+            this.getFirebaseRootNode.Delete(this.apiUrl + "/" + this.rootNode + "/" + item);
             if (childs.Length != 0)
             {
                 foreach (FileManagerDirectoryContent child in childs)
@@ -368,10 +377,10 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
             try
             {
                 this.UpdateFirebaseJSONData();
-                FileManagerDirectoryContent[] deleteResponse = this.firebaseGetData.Where(x => x.ParentId == data[0].ParentId).Select(x => x).ToArray();
-                if (deleteResponse.Length == 0)
+                FileManagerDirectoryContent[] emptyFolder = this.firebaseGetData.Where(x => x.ParentId == data[0].ParentId).Select(x => x).ToArray();
+                if (emptyFolder.Length == 0)
                 {
-                    this.getFirebaseRootNode.Patch(this.APIURL + "/" + this.rootNode + "/" + data[0].ParentId, JsonConvert.SerializeObject(new UpdateChild() { hasChild = false, dateModified = DateTime.Now.ToString() }));
+                    this.getFirebaseRootNode.Patch(this.apiUrl + "/" + this.rootNode + "/" + data[0].ParentId, JsonConvert.SerializeObject(new UpdateChild() { hasChild = false, dateModified = DateTime.Now.ToString() }));
                 }
                 DeleteResponse.Files = removedFiles;
                 return DeleteResponse;
@@ -399,7 +408,7 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
             FileManagerResponse renameResponse = new FileManagerResponse();
             try
             {
-                this.getFirebaseRootNode.Patch(this.APIURL + "/" + this.rootNode + "/" + data[0].Id, JsonConvert.SerializeObject(new RenameNode() { name = "" + newName, type = System.IO.Path.GetExtension(newName) }));
+                this.getFirebaseRootNode.Patch(this.apiUrl + "/" + this.rootNode + "/" + data[0].Id, JsonConvert.SerializeObject(new RenameNode() { name = "" + newName, type = System.IO.Path.GetExtension(newName) }));
                 this.UpdateFirebaseJSONData();
                 FileManagerDirectoryContent[] renamedData = firebaseGetData.Where(x => x.Id == data[0].Id).Select(x => new FileManagerDirectoryContent()
                 {
@@ -435,6 +444,8 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
             {
                 int idVal = this.updatedNodeId();
                 List<FileManagerDirectoryContent> i = this.firebaseGetData.Where(x => x.Id == item.Id).Select(x => x).ToList();
+                this.GetRelativePath(target.Id, "/");
+                this.GetRelativeId(target.Id.ToString());
                 FileManagerDirectoryContent CreateData = new FileManagerDirectoryContent()
                 {
                     Id = (idVal + 1).ToString(),
@@ -448,14 +459,14 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                     IsFile = false,
                     Content = i[0].Content,
                     isRoot = String.IsNullOrEmpty(target.ParentId) ? true : false,
-                    FilterPath = this.GetRelativePath(target.Id, "/").Substring(this.rootNode.Length) + "/",
-                    FilterId = this.GetRelativeId(target.Id.ToString()) + "/"
+                    FilterPath = this.filterPath.Substring(this.rootNode.Length) + "/",
+                    FilterId = this.filterId + "/"
                 };
                 copyFiles.Add(CreateData);
                 this.updateDBNode(CreateData, idVal);
                 if (target.HasChild == false)
                 {
-                    this.getFirebaseRootNode.Patch(this.APIURL + "/" + this.rootNode + "/" + target.Id, JsonConvert.SerializeObject(new UpdateChild() { hasChild = true, dateModified = DateTime.Now.ToString() }));
+                    this.getFirebaseRootNode.Patch(this.apiUrl + "/" + this.rootNode + "/" + target.Id, JsonConvert.SerializeObject(new UpdateChild() { hasChild = true, dateModified = DateTime.Now.ToString() }));
                 }
             }
             this.filterPath = this.filterId = null;
@@ -469,6 +480,8 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                     if (child.IsFile)
                     {
                         int idVal = this.updatedNodeId();
+                        this.GetRelativePath(idValue.ToString(), "/");
+                        this.GetRelativeId(idValue.ToString());
                         // Copy the file
                         FileManagerDirectoryContent CreateData = new FileManagerDirectoryContent()
                         {
@@ -483,8 +496,8 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                             IsFile = true,
                             Content = child.Content,
                             isRoot = String.IsNullOrEmpty(this.firebaseGetData.Where(x => x.Id == idVal.ToString()).Select(x => x).ToArray()[0].ParentId) ? true : false,
-                            FilterPath = this.GetRelativePath(idValue.ToString(), "/").Substring(this.rootNode.Length) + "/",
-                            FilterId = this.GetRelativeId(idValue.ToString()) + "/"
+                            FilterPath = this.filterPath.Substring(this.rootNode.Length) + "/",
+                            FilterId = this.filterId + "/"
                         };
                         this.updateDBNode(CreateData, idVal);
                     }
@@ -509,7 +522,7 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                     NamingStrategy = new CamelCaseNamingStrategy()
                 }
             });
-            this.firebaseAPI.Patch(this.APIURL + "/" + this.rootNode + "/", "{" + (idValue + 1).ToString() + ":" + createdString + "}");
+            this.firebaseAPI.Patch(this.apiUrl + "/" + this.rootNode + "/", "{" + (idValue + 1).ToString() + ":" + createdString + "}");
         }
 
         // Copies file(s) or folder(s).
@@ -534,6 +547,8 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                     {
                         // Copy the file
                         List<FileManagerDirectoryContent> i = this.firebaseGetData.Where(x => x.Id == item.Id).Select(x => x).ToList();
+                        this.GetRelativePath(targetData.Id, "/");
+                        this.GetRelativeId(targetData.Id);
                         FileManagerDirectoryContent CreateData = new FileManagerDirectoryContent()
                         {
                             Id = (idValue + 1).ToString(),
@@ -547,8 +562,8 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                             IsFile = true,
                             Content = i[0].Content,
                             isRoot = String.IsNullOrEmpty(targetData.ParentId) ? true : false,
-                            FilterPath = this.GetRelativePath(targetData.Id, "/").Substring(this.rootNode.Length) + "/",
-                            FilterId = this.GetRelativeId(targetData.Id) + "/"
+                            FilterPath = this.filterPath.Substring(this.rootNode.Length) + "/",
+                            FilterId = this.filterId + "/"
 
                         };
                         copyFiles.Add(CreateData);
@@ -585,9 +600,9 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
         public FileManagerResponse Move(string path, string targetPath, string[] names, string[] renameFiles, FileManagerDirectoryContent targetData, params FileManagerDirectoryContent[] data)
         {
             FileManagerResponse moveResponse = new FileManagerResponse();
-            foreach (FileManagerDirectoryContent i in data)
+            foreach (FileManagerDirectoryContent item in data)
             {
-                List<string> children = this.firebaseGetData.Where(x => x.ParentId == i.Id).Select(x => x.Id).ToList();
+                List<string> children = this.firebaseGetData.Where(x => x.ParentId == item.Id).Select(x => x.Id).ToList();
                 if (children.IndexOf(targetData.Id) != -1 || data[0].Id == targetData.Id)
                 {
                     ErrorDetails er = new ErrorDetails();
@@ -596,52 +611,67 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                     moveResponse.Error = er;
                     return moveResponse;
                 }
-                foreach (FileManagerDirectoryContent item in data)
+                try
                 {
-                    try
+                    // Move the file or folder
+                    this.filterPath = this.filterId = null;
+                    this.getFirebaseRootNode.Patch(this.apiUrl + "/" + this.rootNode + "/" + item.Id, JsonConvert.SerializeObject(new UpdateParentId() { parentId = targetData.Id, isRoot = String.IsNullOrEmpty(targetData.ParentId) ? true : false, filterId = "", filterPath = "" }));
+                    this.GetRelativeId(targetData.Id);
+                    this.GetRelativePath(targetData.Id, "/");
+                    this.getFirebaseRootNode.Patch(this.apiUrl + "/" + this.rootNode + "/" + item.Id, JsonConvert.SerializeObject(new UpdateParentId() { parentId = targetData.Id, isRoot = String.IsNullOrEmpty(targetData.ParentId) ? true : false, filterId = this.filterId + "/", filterPath = this.filterPath.Substring(this.rootNode.Length) + "/" }));
+                    this.UpdateFirebaseJSONData();
+                    this.updateChildPath(item, false);
+                    FileManagerDirectoryContent[] targetItem = this.firebaseGetData.Where(x => x.Id == targetData.Id).Select(x => x).ToArray();
+                    if (targetItem[0].HasChild == false)
                     {
-                        // Move the file or folder
-                        this.filterPath = this.filterId = null;
-                        this.getFirebaseRootNode.Patch(this.APIURL + "/" + this.rootNode + "/" + i.Id, JsonConvert.SerializeObject(new UpdateParentId() { parentId = targetData.Id, isRoot = String.IsNullOrEmpty(targetData.ParentId) ? true : false, filterId = "", filterPath = "" }));
-                        this.getFirebaseRootNode.Patch(this.APIURL + "/" + this.rootNode + "/" + i.Id, JsonConvert.SerializeObject(new UpdateParentId() { parentId = targetData.Id, isRoot = String.IsNullOrEmpty(targetData.ParentId) ? true : false, filterId = this.GetRelativeId(targetData.Id), filterPath = this.GetRelativePath(targetData.Id, "/").Substring(this.rootNode.Length) + "/" }));
-                        this.UpdateFirebaseJSONData();
-                        this.updateChildPath(item);
-                        FileManagerDirectoryContent[] targetItem = this.firebaseGetData.Where(x => x.Id == targetData.Id).Select(x => x).ToArray();
-                        if (targetItem[0].HasChild == false)
-                        {
-                            this.getFirebaseRootNode.Patch(this.APIURL + "/" + this.rootNode + "/" + targetData.Id, JsonConvert.SerializeObject(new UpdateChild() { hasChild = true, dateModified = DateTime.Now.ToString() }));
-                        }
-                        copyFiles.Add(this.firebaseGetData.Where(x => x.Id == item.Id).Select(x => x).ToArray()[0]);
-                        if (this.firebaseGetData.Where(x => x.ParentId == item.ParentId && x.Type == "folder").Select(x => x).ToArray().Length < 1)
-                        {
-                            this.getFirebaseRootNode.Patch(this.APIURL + "/" + this.rootNode + "/" + item.ParentId, JsonConvert.SerializeObject(new UpdateChild() { hasChild = false, dateModified = DateTime.Now.ToString() }));
-                        }
+                        this.getFirebaseRootNode.Patch(this.apiUrl + "/" + this.rootNode + "/" + targetData.Id, JsonConvert.SerializeObject(new UpdateChild() { hasChild = true, dateModified = DateTime.Now.ToString() }));
                     }
-                    catch (Exception e)
+                    copyFiles.Add(this.firebaseGetData.Where(x => x.Id == item.Id).Select(x => x).ToArray()[0]);
+                    if (this.firebaseGetData.Where(x => x.ParentId == item.ParentId && x.Type == "folder").Select(x => x).ToArray().Length < 1)
                     {
-                        Console.WriteLine("An error occurred: " + e.Message);
-                        return null;
+                        this.getFirebaseRootNode.Patch(this.apiUrl + "/" + this.rootNode + "/" + item.ParentId, JsonConvert.SerializeObject(new UpdateChild() { hasChild = false, dateModified = DateTime.Now.ToString() }));
                     }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("An error occurred: " + e.Message);
+                    return null;
                 }
             }
             moveResponse.Files = copyFiles;
             return moveResponse;
         }
-        public void updateChildPath(FileManagerDirectoryContent item)
+        public void updateChildPath(FileManagerDirectoryContent item, bool innerChild)
         {
-            this.filterPath = this.filterId = null;
+            if (innerChild)
+                this.getFirebaseRootNode.Patch(this.apiUrl + "/" + this.rootNode + "/" + item.Id, JsonConvert.SerializeObject(new UpdateParentId()
+                {
+                    parentId = item.ParentId,
+                    isRoot = String.IsNullOrEmpty(item.ParentId) ? true : false,
+                    filterId = filterId = this.filterId.Substring(0, (this.filterId.Length - (this.filterId.Split("/").Last()).Length)),
+                    filterPath = item.IsFile ? this.filterPath.Substring(this.rootNode.Length) + "/" : (this.filterPath.Substring(this.rootNode.Length)).Substring(0, (this.filterPath.Substring(this.rootNode.Length)).Length - (this.filterPath.Substring(this.rootNode.Length)).Split("/").Last().Length)
+                }));
             FileManagerDirectoryContent[] childs = this.firebaseGetData.Where(x => x.ParentId == item.Id).Select(x => x).ToArray();
             if (childs.Length > 0)
             {
                 foreach (FileManagerDirectoryContent child in childs)
                 {
-                    this.getFirebaseRootNode.Patch(this.APIURL + "/" + this.rootNode + "/" + child.Id, JsonConvert.SerializeObject(new UpdateParentId() { parentId = item.Id, isRoot = String.IsNullOrEmpty(child.ParentId) ? true : false, filterId = this.GetRelativeId(child.Id) + "/", filterPath = this.GetRelativePath(child.Id, "/").Substring(this.rootNode.Length) + "/" }));
+                    this.filterPath = this.filterId = null;
+                    this.GetRelativeId(child.Id);
+                    this.GetRelativePath(child.Id, "/");
+                    this.getFirebaseRootNode.Patch(this.apiUrl + "/" + this.rootNode + "/" + child.Id, JsonConvert.SerializeObject(new UpdateParentId()
+                    {
+                        parentId = item.Id,
+                        isRoot = String.IsNullOrEmpty(child.ParentId) ? true : false,
+                        filterId = filterId = this.filterId.Substring(0, (this.filterId.Length - (this.filterId.Split("/").Last()).Length)),
+                        filterPath = item.IsFile ? this.filterPath.Substring(this.rootNode.Length) + "/" : (this.filterPath.Substring(this.rootNode.Length)).Substring(0, (this.filterPath.Substring(this.rootNode.Length)).Length - (this.filterPath.Substring(this.rootNode.Length)).Split("/").Last().Length)
+                    }));
                     FileManagerDirectoryContent[] subchilds = this.firebaseGetData.Where(x => x.ParentId == child.Id).Select(x => x).ToArray();
                     if (subchilds.Length > 0)
                     {
                         foreach (FileManagerDirectoryContent i in subchilds)
                         {
-                            this.updateChildPath(child);
+                            this.updateChildPath(i, true);
                         }
                     }
                 }
@@ -691,25 +721,9 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
         //Returns the image
         public FileStreamResult GetImage(string path, string id, bool allowCompress, ImageSize size, params FileManagerDirectoryContent[] data)
         {
-            FirebaseResponse res = this.getFirebaseRootNode.Get(this.APIURL + "/" + this.rootNode + "/" + id);
-            dynamic obj = Newtonsoft.Json.JsonConvert.DeserializeObject(res.JSONContent);
-            FileManagerDirectoryContent[] firebaseGetData = JsonConvert.DeserializeObject<FileManagerDirectoryContent[]>(getResponse.JSONContent);
-            firebaseGetData = firebaseGetData.Where(c => c != null).ToArray();
-            List<FileManagerDirectoryContent> cont = firebaseGetData.Where(x => x.Id == id).ToList();
-            byte[] fileContent = cont[0].Content;
-            if (File.Exists(Path.Combine(Path.GetTempPath(), cont[0].Name)))
-            {
-                File.Delete(Path.Combine(Path.GetTempPath(), cont[0].Name));
-            }
-            using (Stream file = File.OpenWrite(Path.Combine(Path.GetTempPath(), cont[0].Name)))
-            {
-                file.Write(fileContent, 0, fileContent.Length);
-            }
             try
             {
-                FileStream fileStreamInput = new FileStream(Path.Combine(Path.GetTempPath(), cont[0].Name), FileMode.Open, FileAccess.Read);
-                fileStreamResult = new FileStreamResult(fileStreamInput, "APPLICATION/octet-stream");
-                return fileStreamResult;
+                return new FileStreamResult(new MemoryStream(this.firebaseGetData.Where(x => x.Id == id).ToList()[0].Content), "APPLICATION/octet-stream");
             }
             catch (Exception ex) { throw ex; }
         }
@@ -733,7 +747,8 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                     BinaryReader br = new BinaryReader(fsSource);
                     long numBytes = new FileInfo(Path.Combine(Path.GetTempPath(), filename)).Length;
                     byte[] bytes = br.ReadBytes((int)numBytes);
-
+                    this.GetRelativePath(data[0].Id, "/");
+                    this.GetRelativeId(data[0].Id);
                     FileManagerDirectoryContent CreateData = new FileManagerDirectoryContent()
                     {
                         Id = (idValue + 1).ToString(),
@@ -747,8 +762,8 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                         IsFile = true,
                         Content = bytes,
                         isRoot = (data[0].Id.ToString() == "0") ? true : false,
-                        FilterPath = this.GetRelativePath(data[0].Id, "/").Substring(this.rootNode.Length) + "/",
-                        FilterId = this.GetRelativeId(data[0].Id) + "/"
+                        FilterPath = this.filterPath.Substring(this.rootNode.Length) + "/",
+                        FilterId = this.filterId + "/"
                     };
                     this.updateDBNode(CreateData, idValue);
                 }
@@ -840,25 +855,24 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
         {
             DirectoryInfo info = new DirectoryInfo(Path.GetTempPath() + Name);
             FileManagerDirectoryContent[] childFiles = this.firebaseGetData.Where(x => x.ParentId == Id).Select(x => x).ToArray();
-            foreach (FileManagerDirectoryContent child in childFiles)
+            foreach (var child in childFiles.Select((x, index) => new { x, index }))
             {
-                if (child.IsFile)
+                if (child.x.IsFile)
                 {
                     byte[][] fileSize = this.firebaseGetData.Where(x => x.ParentId == Id && x.IsFile == true).Select(x => x.Content).ToArray();
-                    byte[] fileContent = fileSize.SelectMany(i => i).ToArray();
                     Stream file;
-                    using (file = System.IO.File.OpenWrite(Path.Combine(Path.GetTempPath() + Name, child.Name)))
+                    using (file = System.IO.File.OpenWrite(Path.Combine(Path.GetTempPath() + Name, child.x.Name)))
                     {
-                        file.Write(fileContent, 0, fileContent.Length);
+                        file.Write(fileSize[child.index], 0, fileSize[child.index].Length);
                         file.Close();
-                        zipEntry = archive.CreateEntryFromFile(Path.Combine(Path.GetTempPath() + Name, child.Name), Name + "\\" + child.Name, CompressionLevel.Fastest);
+                        zipEntry = archive.CreateEntryFromFile(Path.Combine(Path.GetTempPath() + Name, child.x.Name), Name + "\\" + child.x.Name, CompressionLevel.Fastest);
                     }
                 }
                 else
                 {
-                    Directory.CreateDirectory(Path.Combine(Path.GetTempPath() + Name) + "\\" + child.Name);
-                    archive.CreateEntry(Name + "\\" + child.Name + "/", CompressionLevel.Fastest);
-                    DownloadFolderFiles(child.Id, Name + "\\" + child.Name, archive, zipEntry);
+                    Directory.CreateDirectory(Path.Combine(Path.GetTempPath() + Name) + "\\" + child.x.Name);
+                    archive.CreateEntry(Name + "\\" + child.x.Name + "/", CompressionLevel.Fastest);
+                    DownloadFolderFiles(child.x.Id, Name + "\\" + child.x.Name, archive, zipEntry);
                 }
             }
         }
@@ -874,19 +888,19 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                 }
             });
         }
-        private class RenameNode
+        protected class RenameNode
         {
             public string name;
             public string type;
         }
 
-        private class UpdateChild
+        protected class UpdateChild
         {
             public bool hasChild;
             public string dateModified;
         }
 
-        private class UpdateParentId
+        protected class UpdateParentId
         {
             public string parentId;
             public bool isRoot;

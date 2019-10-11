@@ -4,39 +4,42 @@ This repository contains the ASP.NET Core firebase real time database based file
 
 ## Key Features
 
-The following actions can be performed with firebase realtime database based file system provider.
+The following actions can be performed with firebase real time database based file system provider.
 
-- Read     - Read the files from firebase real time database.
-- Details  - Provides details about files Type, Size, Location and Modified date.
-- Download - Download the selected file or folder from the firebase real time database.
-- Upload   - Upload a files to firebase real time database. It accepts uploaded media with the following characteristics:
-                - Maximum file size:  30MB
-- Create   - Create a new folder.
-- Delete   - Remove a file from firebase real time database.
-- Copy     - Copy the selected Files from target.
-- Move     - Paste the copied files to the desired location
-- Rename   - Rename a folder or file
-- Search   - Search a file or folder in firebase real time database
+| **Actions** | **Description** |
+| --- | --- |
+| Read     | Read the files from firebase real time database. |
+| Details  | Provides details about files Type, Size, Location and Modified date. |
+| Download | Download the selected file or folder from the firebase real time database. |
+| Upload   | Uploads a files to Firebase realtime database. It accepts uploaded media with the following characteristics: <ul><li>Maximum file size:  30MB<li>Accepted Media MIME types: `*/*` </li></ul> |
+| Create   | Create a new folder. |
+| Delete   | Remove a file from firebase real time database. |
+| Copy     | Copy the selected Files from target. |
+| Move     | Paste the copied files to the desired location. |
+| Rename   | Rename a folder or file. |
+| Search   | Search a file or folder in firebase real time database. |
 
 ## Prerequisites
 
-To run the service, we need to create a [Firebase project](https://console.firebase.google.com/) to access firebase realtime database. Register the realtime database details like REST API link and the root node in the SetRESTAPIURL method of FilebaseRealtimeFileProvider in the controller part of the ASP.NET Core application.
+To run the service, we need to create a [Firebase project](https://console.firebase.google.com/) to access firebase realtime database. Register the realtime database details like firebase realtime database service link, root node and service account key path in the **RegisterFirebaseRealtimeDB** method of *FilebaseFileProvider* in the controller part of the ASP.NET Core application.
 
 ```
 
-  SetRESTAPIURL(string APIURL, string rootNode)
+  RegisterFirebaseRealtimeDB(string apiUrl, string rootNode, string serviceAccountKeyPath)
 
 ```
 
 ## How to run this application?
 
-To run this application, clone the [`ej2-firebase-realtime-database-aspcore-file-provider`](https://github.com/ej2-firebase-realtime-database-aspcore-file-provider) repository and then navigate to its appropriate path where it has been located in your system.
+To run this application, clone the [`ej2-firebase-realtime-database-aspcore-file-provider`](https://github.com/SyncfusionExamples/ej2-firebase-realtime-database-aspcore-file-provider) repository and then navigate to its appropriate path where it has been located in your system.
 
 To do so, open the command prompt and run the below commands one after the other.
 
 ```
 
-git clone https://github.com/ej2-firebase-realtime-database-aspcore-file-provider  ej2-firebase-realtime-database-aspcore-file-provider
+git clone https://github.com/SyncfusionExamples/ej2-firebase-realtime-database-aspcore-file-provider
+
+
 cd ej2-firebase-realtime-database-aspcore-file-provider
 
 ```
@@ -44,6 +47,60 @@ cd ej2-firebase-realtime-database-aspcore-file-provider
 ## Running application
 
 Once cloned, open solution file in visual studio.Then build the project after restoring the nuget packages and run it.
+
+## File Manager AjaxSettings
+
+To access the basic actions such as Read, Delete, Copy, Move, Rename, Search, and Get Details of File Manager using Firebase realtime database file system service, just map the following code snippet in the Ajaxsettings property of File Manager.
+
+Here, the `hostUrl` will be your locally hosted port number.
+
+```
+  var hostUrl = http://localhost:62870/;
+  ajaxSettings: {
+        url: hostUrl + 'api/FirebaseProvider/FirebaseRealtimeFileOperations'
+  }
+```
+
+## File download AjaxSettings
+
+To perform download operation, initialize the `downloadUrl` property in ajaxSettings of the File Manager component.
+
+```
+  var hostUrl = http://localhost:62870/;
+  ajaxSettings: {
+        url: hostUrl + 'api/FirebaseProvider/FirebaseRealtimeFileOperations',
+        downloadUrl: hostUrl +'api/FirebaseProvider/FirebaseRealtimeDownload'
+  }
+```
+
+## File upload AjaxSettings
+
+To perform upload operation, initialize the `uploadUrl` property in ajaxSettings of the File Manager component.
+
+```
+  var hostUrl = http://localhost:62870/;
+  ajaxSettings: {
+        url: hostUrl + 'api/FirebaseProvider/FirebaseRealtimeFileOperations',
+        uploadUrl: hostUrl +'api/FirebaseProvider/FirebaseRealtimeUpload'
+  }
+```
+
+## File image preview AjaxSettings
+
+To perform image preview support in the File Manager component, initialize the `getImageUrl` property in ajaxSettings of the File Manager component.
+
+```
+  var hostUrl = http://localhost:62870/;
+  ajaxSettings: {
+        url: hostUrl + 'api/FirebaseProvider/FirebaseRealtimeFileOperations',
+        getImageUrl: hostUrl +'api/FirebaseProvider/FirebaseRealtimeGetImage'
+  }
+```
+
+The FileManager will be rendered as the following.
+
+![File Manager](https://ej2.syncfusion.com/products/images/file-manager/readme.gif)
+
 
 ## Support
 

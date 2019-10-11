@@ -6,8 +6,17 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Content Remove="FirebaseRealtimeDBHelper\access_key.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="FirebaseRealtimeDBHelper\access_key.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.32.0" />
   </ItemGroup>
 
 </Project>
