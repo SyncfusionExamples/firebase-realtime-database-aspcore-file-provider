@@ -72,22 +72,17 @@ namespace EJ2FirebaseRealtimeASPCoreFileProvider.Controllers
         [Route("FirebaseRealtimeUpload")]
         public IActionResult FirebaseRealtimeUpload(string path, IList<IFormFile> uploadFiles, string action, string data)
         {
-            //FileManagerResponse uploadResponse;
-            //FileManagerDirectoryContent[] dataObject = new FileManagerDirectoryContent[1];
-            //dataObject[0] = JsonConvert.DeserializeObject<FileManagerDirectoryContent>(data);
-            //uploadResponse = operation.Upload(path, uploadFiles, action, dataObject);
-            //if (uploadResponse.Error != null)
-            //{
-            //    Response.Clear();
-            //    Response.ContentType = "application/json; charset=utf-8";
-            //    Response.StatusCode = Convert.ToInt32(uploadResponse.Error.Code);
-            //    Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = uploadResponse.Error.Message;
-            //}
-            Response.Clear();
-            Response.ContentType = "application/json; charset=utf-8";
-            Response.StatusCode = 403;
-            Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = "File Manager's upload functionality is restricted in the online demo." +
-                "To work with upload functionality, please download ej2-firebase-realtime-database-aspcore-file-provider from the GitHub repository";
+            FileManagerResponse uploadResponse;
+            FileManagerDirectoryContent[] dataObject = new FileManagerDirectoryContent[1];
+            dataObject[0] = JsonConvert.DeserializeObject<FileManagerDirectoryContent>(data);
+            uploadResponse = operation.Upload(path, uploadFiles, action, dataObject);
+            if (uploadResponse.Error != null)
+            {
+                Response.Clear();
+                Response.ContentType = "application/json; charset=utf-8";
+                Response.StatusCode = Convert.ToInt32(uploadResponse.Error.Code);
+                Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = uploadResponse.Error.Message;
+            }
             return Content("");
         }
 
