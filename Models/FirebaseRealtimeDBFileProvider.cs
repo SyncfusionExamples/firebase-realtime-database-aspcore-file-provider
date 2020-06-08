@@ -732,40 +732,165 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
         public virtual FileManagerResponse Upload(string path, IList<IFormFile> uploadFiles, string action, params FileManagerDirectoryContent[] data)
         {
             FileManagerResponse uploadResponse = new FileManagerResponse();
+            List<string> existFiles = new List<string>();
             try
             {
-                string filename = Path.GetFileName(uploadFiles[0].FileName);
-                string contentType = uploadFiles[0].ContentType;
-                int idValue = this.firebaseGetData.Select(x => x.Id).ToArray().Select(int.Parse).ToArray().Max();
-                using (FileStream fsSource = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Create))
+                foreach (IFormFile file in uploadFiles)
                 {
-                    uploadFiles[0].CopyTo(fsSource);
-                    fsSource.Close();
-                }
-                using (FileStream fsSource = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Open, FileAccess.Read))
-                {
-                    BinaryReader br = new BinaryReader(fsSource);
-                    long numBytes = new FileInfo(Path.Combine(Path.GetTempPath(), filename)).Length;
-                    byte[] bytes = br.ReadBytes((int)numBytes);
-                    this.GetRelativePath(data[0].Id, "/");
-                    this.GetRelativeId(data[0].Id);
-                    FileManagerDirectoryContent CreateData = new FileManagerDirectoryContent()
+                    string name = file.FileName;
+                    string fullName = Path.Combine(Path.GetTempPath(), name);
+                    if (uploadFiles != null)
                     {
-                        Id = (idValue + 1).ToString(),
-                        Name = filename,
-                        Size = bytes.Length,
-                        DateCreated = DateTime.Now.ToString(),
-                        DateModified = DateTime.Now.ToString(),
-                        Type = System.IO.Path.GetExtension(filename),
-                        HasChild = false,
-                        ParentId = data[0].Id,
-                        IsFile = true,
-                        Content = bytes,
-                        isRoot = (data[0].Id.ToString() == "0") ? true : false,
-                        FilterPath = this.filterPath.Substring(this.rootNode.Length) + "/",
-                        FilterId = this.filterId + "/"
-                    };
-                    this.updateDBNode(CreateData, idValue);
+                        string filename = Path.GetFileName(uploadFiles[0].FileName);
+                        string contentType = uploadFiles[0].ContentType;
+                        int idValue = this.firebaseGetData.Select(x => x.Id).ToArray().Select(int.Parse).ToArray().Max();
+                        string[] fileNames = this.firebaseGetData.Select(x => x.Name).ToArray();
+                        if (action == "save")
+                        {
+                            if (!System.IO.File.Exists(fullName))
+                            {
+                                using (FileStream fsSource = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Create))
+                                {
+                                    uploadFiles[0].CopyTo(fsSource);
+                                    fsSource.Close();
+                                }
+                                using (FileStream fsSource = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Open, FileAccess.Read))
+                                {
+                                    BinaryReader br = new BinaryReader(fsSource);
+                                    long numBytes = new FileInfo(Path.Combine(Path.GetTempPath(), filename)).Length;
+                                    byte[] bytes = br.ReadBytes((int)numBytes);
+                                    this.GetRelativePath(data[0].Id, "/");
+                                    this.GetRelativeId(data[0].Id);
+                                    FileManagerDirectoryContent CreateData = new FileManagerDirectoryContent()
+                                    {
+                                        Id = (idValue + 1).ToString(),
+                                        Name = filename,
+                                        Size = bytes.Length,
+                                        DateCreated = DateTime.Now.ToString(),
+                                        DateModified = DateTime.Now.ToString(),
+                                        Type = System.IO.Path.GetExtension(filename),
+                                        HasChild = false,
+                                        ParentId = data[0].Id,
+                                        IsFile = true,
+                                        Content = bytes,
+                                        isRoot = (data[0].Id.ToString() == "0") ? true : false,
+                                        FilterPath = this.filterPath.Substring(this.rootNode.Length) + "/",
+                                        FilterId = this.filterId + "/"
+                                    };
+                                    this.updateDBNode(CreateData, idValue);
+                                }
+                            }
+                            else
+                            {
+                                existFiles.Add(name);
+                            }
+                        }
+                        else if (action == "replace")
+                        {
+                            int i = 0;
+                            FileManagerDirectoryContent[] childs = this.firebaseGetData.Select(x => x).ToArray();
+                            foreach (string newFile in fileNames)
+                            {
+                                if (newFile == filename)
+                                {
+                                    while (i < fileNames.Length)
+                                    {
+                                        if (filename == fileNames[i])
+                                        {
+                                            int id = i;
+                                            this.DeleteItems(childs[id].Id);
+                                        }
+                                        i++;
+                                    }
+                                }
+                            }
+                            using (FileStream fsSource = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Create))
+                            {
+                                file.CopyTo(fsSource);
+                                fsSource.Close();
+                            }
+                            using (FileStream fsSource = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Open, FileAccess.Read))
+                            {
+                                BinaryReader br = new BinaryReader(fsSource);
+                                long numBytes = new FileInfo(Path.Combine(Path.GetTempPath(), filename)).Length;
+                                byte[] bytes = br.ReadBytes((int)numBytes);
+                                this.GetRelativePath(data[0].Id, "/");
+                                this.GetRelativeId(data[0].Id);
+                                FileManagerDirectoryContent CreateData = new FileManagerDirectoryContent()
+                                {
+                                    Id = (idValue + 1).ToString(),
+                                    Name = filename,
+                                    Size = bytes.Length,
+                                    DateCreated = DateTime.Now.ToString(),
+                                    DateModified = DateTime.Now.ToString(),
+                                    Type = System.IO.Path.GetExtension(filename),
+                                    HasChild = false,
+                                    ParentId = data[0].Id,
+                                    IsFile = true,
+                                    Content = bytes,
+                                    isRoot = (data[0].Id.ToString() == "0") ? true : false,
+                                    FilterPath = this.filterPath.Substring(this.rootNode.Length) + "/",
+                                    FilterId = this.filterId + "/"
+                                };
+                                this.updateDBNode(CreateData, idValue);
+                            }
+                        }
+                        else if (action == "keepboth")
+                        {
+                            string newName = fullName;
+                            string newFileName = file.FileName;
+                            int index = fullName.LastIndexOf(".");
+                            int indexValue = newFileName.LastIndexOf(".");
+                            if (index >= 0)
+                            {
+                                newName = fullName.Substring(0, index);
+                                newFileName = newFileName.Substring(0, indexValue);
+                            }
+                            int fileCount = 0;
+                            while (System.IO.File.Exists(newName + (fileCount > 0 ? "(" + fileCount.ToString() + ")" + Path.GetExtension(name) : Path.GetExtension(name))))
+                            {
+                                fileCount++;
+                            }
+                            newName = newFileName + (fileCount > 0 ? "(" + fileCount.ToString() + ")" : "") + Path.GetExtension(name);
+                            using (FileStream fsSource = new FileStream(Path.Combine(Path.GetTempPath(), newName), FileMode.Create))
+                            {
+                                file.CopyTo(fsSource);
+                                fsSource.Close();
+                            }
+                            using (FileStream fsSource = new FileStream(Path.Combine(Path.GetTempPath(), newName), FileMode.Open, FileAccess.Read))
+                            {
+                                BinaryReader br = new BinaryReader(fsSource);
+                                long numBytes = new FileInfo(Path.Combine(Path.GetTempPath(), newName)).Length;
+                                byte[] bytes = br.ReadBytes((int)numBytes);
+                                this.GetRelativePath(data[0].Id, "/");
+                                this.GetRelativeId(data[0].Id);
+                                FileManagerDirectoryContent CreateData = new FileManagerDirectoryContent()
+                                {
+                                    Id = (idValue + 1).ToString(),
+                                    Name = newName,
+                                    Size = bytes.Length,
+                                    DateCreated = DateTime.Now.ToString(),
+                                    DateModified = DateTime.Now.ToString(),
+                                    Type = System.IO.Path.GetExtension(newName),
+                                    HasChild = false,
+                                    ParentId = data[0].Id,
+                                    IsFile = true,
+                                    Content = bytes,
+                                    isRoot = (data[0].Id.ToString() == "0") ? true : false,
+                                    FilterPath = this.filterPath.Substring(this.rootNode.Length) + "/",
+                                    FilterId = this.filterId + "/"
+                                };
+                                this.updateDBNode(CreateData, idValue);
+                            }
+                        }
+                    }
+                }
+                if (existFiles.Count != 0)
+                {
+                    ErrorDetails er = new ErrorDetails();
+                    er.Code = "400";
+                    er.Message = "File Already Exists";
+                    uploadResponse.Error = er;
                 }
             }
             catch (Exception e)
