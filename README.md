@@ -1,6 +1,6 @@
-# ej2-firebase-realtime-database-aspcore-file-provider
+# firebase-realtime-database-aspcore-file-provider
 
-This repository contains the ASP.NET Core firebase real time database based file system providers for the  essential JS 2 file manager component.
+This repository contains the ASP.NET Core firebase real time database based file system providers for the  Syncfusion file manager component.
 
 ## Key Features
 
@@ -31,16 +31,16 @@ To run the service, we need to create a [Firebase project](https://console.fireb
 
 ## How to run this application?
 
-To run this application, clone the [`ej2-firebase-realtime-database-aspcore-file-provider`](https://github.com/SyncfusionExamples/ej2-firebase-realtime-database-aspcore-file-provider) repository and then navigate to its appropriate path where it has been located in your system.
+To run this application, clone the [`firebase-realtime-database-aspcore-file-provider`](https://github.com/SyncfusionExamples/firebase-realtime-database-aspcore-file-provider) repository and then navigate to its appropriate path where it has been located in your system.
 
 To do so, open the command prompt and run the below commands one after the other.
 
 ```
 
-git clone https://github.com/SyncfusionExamples/ej2-firebase-realtime-database-aspcore-file-provider
+git clone https://github.com/SyncfusionExamples/firebase-realtime-database-aspcore-file-provider
 
 
-cd ej2-firebase-realtime-database-aspcore-file-provider
+cd firebase-realtime-database-aspcore-file-provider
 
 ```
 
