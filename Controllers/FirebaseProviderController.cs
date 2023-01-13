@@ -16,7 +16,7 @@ namespace EJ2FirebaseRealtimeASPCoreFileProvider.Controllers
     public class FirebaseProviderController : Controller
     {
         public FirebaseRealtimeDBFileProvider operation;
-        public FirebaseProviderController(IHostingEnvironment hostingEnvironment)
+        public FirebaseProviderController(IWebHostEnvironment hostingEnvironment)
         {
             this.operation = new FirebaseRealtimeDBFileProvider();
             this.operation.RegisterFirebaseRealtimeDB("https://filemanager-c0f6d.firebaseio.com/", "Files", hostingEnvironment.ContentRootPath + "\\FirebaseRealtimeDBHelper\\access_key.json");
