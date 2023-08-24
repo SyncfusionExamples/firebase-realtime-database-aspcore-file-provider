@@ -1,6 +1,8 @@
 # firebase-realtime-database-aspcore-file-provider
 
-This repository contains the ASP.NET Core firebase real time database based file system providers for the  Syncfusion file manager component.
+This repository contains the ASP.NET Core firebase real time database based file system providers for the Syncfusion file manager component.
+
+To know more about firebase real time database file system provider for File Manager, please refer our documentation [here](https://ej2.syncfusion.com/aspnetcore/documentation/file-manager/file-system-provider#firebase-realtime-database-file-system-provider).
 
 ## Key Features
 
