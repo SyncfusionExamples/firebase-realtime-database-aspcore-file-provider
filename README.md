@@ -21,6 +21,8 @@ The following actions can be performed with firebase real time database based fi
 
 ## Prerequisites
 
+* Visual Studio 2022
+
 To run the service, we need to create a [Firebase project](https://console.firebase.google.com/) to access firebase realtime database. Register the realtime database details like firebase realtime database service link, root node and service account key path in the **RegisterFirebaseRealtimeDB** method of *FilebaseFileProvider* in the controller part of the ASP.NET Core application.
 
 ```
@@ -29,24 +31,12 @@ To run the service, we need to create a [Firebase project](https://console.fireb
 
 ```
 
-## How to run this application?
+## How to run the project
 
-To run this application, clone the [`firebase-realtime-database-aspcore-file-provider`](https://github.com/SyncfusionExamples/firebase-realtime-database-aspcore-file-provider) repository and then navigate to its appropriate path where it has been located in your system.
-
-To do so, open the command prompt and run the below commands one after the other.
-
-```
-
-git clone https://github.com/SyncfusionExamples/firebase-realtime-database-aspcore-file-provider
-
-
-cd firebase-realtime-database-aspcore-file-provider
-
-```
-
-## Running application
-
-Once cloned, open solution file in visual studio.Then build the project after restoring the nuget packages and run it.
+* Checkout this project to a location in your disk.
+* Open the solution file using Visual Studio 2022.
+* Restore the NuGet packages by rebuilding the solution.
+* Run the project.
 
 ## File Manager AjaxSettings
 
@@ -118,4 +108,4 @@ Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-
 
 Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/filemanager/CHANGELOG.md)
 
-© Copyright 2020 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+© Copyright 2022 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
