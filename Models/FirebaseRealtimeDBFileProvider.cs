@@ -684,8 +684,24 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
             try
             {
                 char[] i = new Char[] { '*' };
-                FileManagerDirectoryContent[] s = this.firebaseGetData.Where(x => x.Name.ToLower().Contains(searchString.TrimStart(i).TrimEnd(i).ToLower())).Select(x => x).ToArray();
-                searchResponse.Files = s;
+                FileManagerDirectoryContent childItem = this.firebaseGetData.FirstOrDefault(x =>
+                {
+                    if (string.IsNullOrEmpty(x.FilterId))
+                        return false;
+
+                    var index = x.FilterId.IndexOf('/');
+                    var filterId = index > 0 ? x.FilterId.Substring(index) : x.FilterId;
+
+                    return filterId == path;
+                });
+                if (childItem == null)
+                {
+                    searchResponse.Files = new List<FileManagerDirectoryContent>();
+                    return searchResponse;
+                }
+                List<FileManagerDirectoryContent> currentItems = GetAllChildItems(childItem.ParentId);
+                FileManagerDirectoryContent[] searchFiles = currentItems.Select(x => x).Where(x => x.Name.ToLower().Contains(searchString.TrimStart(i).TrimEnd(i).ToLower())).Select(x => x).ToArray();
+                searchResponse.Files = searchFiles;
                 return searchResponse;
             }
             catch (Exception e)
@@ -696,6 +712,17 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                 searchResponse.Error = er;
                 return searchResponse;
             }
+        }
+
+        private List<FileManagerDirectoryContent> GetAllChildItems(string parentId)
+        {
+            List<FileManagerDirectoryContent> children = this.firebaseGetData.Where(item => item.ParentId == parentId).ToList();
+            List<FileManagerDirectoryContent> allChildren = new List<FileManagerDirectoryContent>(children);
+            foreach (var child in children)
+            {
+                allChildren.AddRange(GetAllChildItems(child.Id));
+            }
+            return allChildren;
         }
         // Converts the bytes to definite size values
         public String byteConversion(long fileSize)
