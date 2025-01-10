@@ -684,7 +684,6 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
             try
             {
                 char[] i = new Char[] { '*' };
-                var dahellota = this.firebaseGetData;
                 FileManagerDirectoryContent childItem = this.firebaseGetData.FirstOrDefault(x =>
                 {
                     if (string.IsNullOrEmpty(x.FilterId))
