@@ -740,9 +740,9 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                 double num = Math.Round(bytes / Math.Pow(1024, loc), 1);
                 return (Math.Sign(fileSize) * num).ToString() + " " + index[loc];
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                throw e;
+                throw;
             }
         }
         //Returns the image
@@ -752,7 +752,7 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
             {
                 return new FileStreamResult(new MemoryStream(this.firebaseGetData.Where(x => x.Id == id).ToList()[0].Content), "APPLICATION/octet-stream");
             }
-            catch (Exception ex) { throw ex; }
+            catch (Exception) { throw; }
         }
 
         // Uploads the file(s) to the files system.
@@ -772,19 +772,20 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                         string contentType = uploadFiles[0].ContentType;
                         int idValue = this.firebaseGetData.Select(x => x.Id).ToArray().Select(int.Parse).ToArray().Max();
                         string[] fileNames = this.firebaseGetData.Select(x => x.Name).ToArray();
+                        string safePath = SanitizeAndValidatePath(Path.Combine(Path.GetTempPath(), filename));
                         if (action == "save")
                         {
                             if (!System.IO.File.Exists(fullName))
                             {
-                                using (FileStream fsSource = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Create))
+                                using (FileStream fsSource = new FileStream(safePath, FileMode.Create))
                                 {
                                     uploadFiles[0].CopyTo(fsSource);
                                     fsSource.Close();
                                 }
-                                using (FileStream fsSource = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Open, FileAccess.Read))
+                                using (FileStream fsSource = new FileStream(safePath, FileMode.Open, FileAccess.Read))
                                 {
                                     BinaryReader br = new BinaryReader(fsSource);
-                                    long numBytes = new FileInfo(Path.Combine(Path.GetTempPath(), filename)).Length;
+                                    long numBytes = new FileInfo(safePath).Length;
                                     byte[] bytes = br.ReadBytes((int)numBytes);
                                     this.GetRelativePath(data[0].Id, "/");
                                     this.GetRelativeId(data[0].Id);
@@ -831,15 +832,15 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                                     }
                                 }
                             }
-                            using (FileStream fsSource = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Create))
+                            using (FileStream fsSource = new FileStream(safePath, FileMode.Create))
                             {
                                 file.CopyTo(fsSource);
                                 fsSource.Close();
                             }
-                            using (FileStream fsSource = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Open, FileAccess.Read))
+                            using (FileStream fsSource = new FileStream(safePath, FileMode.Open, FileAccess.Read))
                             {
                                 BinaryReader br = new BinaryReader(fsSource);
-                                long numBytes = new FileInfo(Path.Combine(Path.GetTempPath(), filename)).Length;
+                                long numBytes = new FileInfo(safePath).Length;
                                 byte[] bytes = br.ReadBytes((int)numBytes);
                                 this.GetRelativePath(data[0].Id, "/");
                                 this.GetRelativeId(data[0].Id);
@@ -879,15 +880,16 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                                 fileCount++;
                             }
                             newName = newFileName + (fileCount > 0 ? "(" + fileCount.ToString() + ")" : "") + Path.GetExtension(name);
-                            using (FileStream fsSource = new FileStream(Path.Combine(Path.GetTempPath(), newName), FileMode.Create))
+                            string newSafePath = SanitizeAndValidatePath(Path.Combine(Path.GetTempPath(), newName));
+                            using (FileStream fsSource = new FileStream(newSafePath, FileMode.Create))
                             {
                                 file.CopyTo(fsSource);
                                 fsSource.Close();
                             }
-                            using (FileStream fsSource = new FileStream(Path.Combine(Path.GetTempPath(), newName), FileMode.Open, FileAccess.Read))
+                            using (FileStream fsSource = new FileStream(newSafePath, FileMode.Open, FileAccess.Read))
                             {
                                 BinaryReader br = new BinaryReader(fsSource);
-                                long numBytes = new FileInfo(Path.Combine(Path.GetTempPath(), newName)).Length;
+                                long numBytes = new FileInfo(newSafePath).Length;
                                 byte[] bytes = br.ReadBytes((int)numBytes);
                                 this.GetRelativePath(data[0].Id, "/");
                                 this.GetRelativeId(data[0].Id);
@@ -938,21 +940,22 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
             {
                 IEnumerable<byte[]> fileProperties = firebaseGetData.Where(x => x.Id == item.Id).Select(x => x.Content);
                 byte[] fileContent = null;
+                string safePath = SanitizeAndValidatePath(Path.Combine(Path.GetTempPath(), item.Name));
                 if (item.IsFile)
                 {
                     fileContent = fileProperties.SelectMany(i => i).ToArray();
-                    if (System.IO.File.Exists(Path.Combine(Path.GetTempPath(), item.Name)))
+                    if (System.IO.File.Exists(safePath))
                     {
-                        System.IO.File.Delete(Path.Combine(Path.GetTempPath(), item.Name));
+                        System.IO.File.Delete(Path.Combine(safePath));
                     }
-                    using (Stream file = System.IO.File.OpenWrite(Path.Combine(Path.GetTempPath(), item.Name)))
+                    using (Stream file = System.IO.File.OpenWrite(safePath))
                     {
                         file.Write(fileContent, 0, fileContent.Length);
                     }
                 }
                 else
                 {
-                    Directory.CreateDirectory(Path.GetTempPath() + item.Name);
+                    Directory.CreateDirectory(safePath);
                 }
                 if (files.IndexOf(item.Name) == -1)
                 {
@@ -963,11 +966,12 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
             {
                 try
                 {
-                    FileStream fileStreamInput = new FileStream(Path.Combine(Path.GetTempPath(), files[0]), FileMode.Open, FileAccess.Read);
+                    string safePath = SanitizeAndValidatePath(Path.Combine(Path.GetTempPath(), files[0]));
+                    FileStream fileStreamInput = new FileStream(safePath, FileMode.Open, FileAccess.Read);
                     fileStreamResult = new FileStreamResult(fileStreamInput, "APPLICATION/octet-stream");
                     fileStreamResult.FileDownloadName = files[0];
                 }
-                catch (Exception ex) { throw ex; }
+                catch (Exception) { throw; }
             }
             else
             {
@@ -985,7 +989,8 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                         }
                         else
                         {
-                            zipEntry = archive.CreateEntryFromFile(Path.GetTempPath() + files[i], files[i], CompressionLevel.Fastest);
+                            string safePath = SanitizeAndValidatePath(Path.GetTempPath() + files[i]);
+                            zipEntry = archive.CreateEntryFromFile(safePath, files[i], CompressionLevel.Fastest);
                         }
 
                     }
@@ -1013,11 +1018,12 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
                 {
                     byte[][] fileSize = this.firebaseGetData.Where(x => x.ParentId == Id && x.IsFile == true).Select(x => x.Content).ToArray();
                     Stream file;
-                    using (file = System.IO.File.OpenWrite(Path.Combine(Path.GetTempPath() + Name, child.x.Name)))
+                    string safePath = SanitizeAndValidatePath(Path.Combine(Path.GetTempPath() + Name, child.x.Name));
+                    using (file = System.IO.File.OpenWrite(safePath))
                     {
                         file.Write(fileSize[child.index], 0, fileSize[child.index].Length);
                         file.Close();
-                        zipEntry = archive.CreateEntryFromFile(Path.Combine(Path.GetTempPath() + Name, child.x.Name), Name + "\\" + child.x.Name, CompressionLevel.Fastest);
+                        zipEntry = archive.CreateEntryFromFile(safePath, Name + "\\" + child.x.Name, CompressionLevel.Fastest);
                     }
                 }
                 else
@@ -1058,6 +1064,32 @@ namespace Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider
             public bool isRoot;
             public string filterId;
             public string filterPath;
+        }
+
+        private string SanitizeAndValidatePath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentException("Path cannot be null or empty.");
+            }
+
+            string decodedPath;
+            do
+            {
+                decodedPath = path;
+                path = Uri.UnescapeDataString(decodedPath);
+            } while (decodedPath != path);
+
+            string fullPath = Path.GetFullPath(path);
+
+            // Ensure the path is within the allowed directory
+            string allowedDirectory = Path.GetFullPath(Path.GetTempPath());
+            if (!fullPath.StartsWith(allowedDirectory, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new UnauthorizedAccessException("Access to the path is not allowed.");
+            }
+
+            return fullPath;
         }
     }
 }
