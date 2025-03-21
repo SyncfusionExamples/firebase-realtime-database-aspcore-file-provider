@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-#if EJ2_DNX
-using System.Web;
-#endif
+﻿using System.Collections.Generic;
 
 namespace Syncfusion.EJ2.FileManager.Base
 {

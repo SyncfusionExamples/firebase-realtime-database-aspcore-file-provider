@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-#if EJ2_DNX
-using System.Web;
-#else
-using Microsoft.AspNetCore.Http;
-#endif
+using System.Linq;using Microsoft.AspNetCore.Http;
 
 namespace Syncfusion.EJ2.FileManager.Base
 {
@@ -22,12 +17,9 @@ namespace Syncfusion.EJ2.FileManager.Base
         public string NewName { get; set; }
 
         public object Date { get; set; }
-#if EJ2_DNX
-        public IEnumerable<System.Web.HttpPostedFileBase> FileUpload { get; set; }
-#else
+
         public IEnumerable<IFormFile> FileUpload { get; set; }
 
-#endif
         public string[] ReplacedItemNames { get; set; }
     }
 }
