@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using Syncfusion.EJ2.FileManager.Base;
 using Syncfusion.EJ2.FileManager.FirebaseRealtimeFileProvider;
+using System.IO;
 
 namespace EJ2FirebaseRealtimeASPCoreFileProvider.Controllers
 {
@@ -19,7 +20,7 @@ namespace EJ2FirebaseRealtimeASPCoreFileProvider.Controllers
         public FirebaseProviderController(IWebHostEnvironment hostingEnvironment)
         {
             this.operation = new FirebaseRealtimeDBFileProvider();
-            this.operation.RegisterFirebaseRealtimeDB("https://filemanager-c0f6d.firebaseio.com/", "Files", hostingEnvironment.ContentRootPath + "\\FirebaseRealtimeDBHelper\\access_key.json");
+            this.operation.RegisterFirebaseRealtimeDB("<---API URL--->", "<---RootNode--->", Path.Combine(hostingEnvironment.ContentRootPath, "FirebaseRealtimeDBHelper", "access_key.json"));
         }
         [Route("FirebaseRealtimeFileOperations")]
         public object FirebaseRealtimeFileOperations([FromBody] FileManagerDirectoryContent args)
